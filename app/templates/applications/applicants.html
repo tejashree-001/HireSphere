@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Applicants | {{ job.title }} | HireSphere{% endblock %}
+{% block content %}
+<section class="content-section">
+  <a class="auth-back" href="{{ url_for('auth.dashboard') }}">← Back to dashboard</a>
+  <div class="section-heading"><span class="eyebrow">EMPLOYER WORKSPACE</span><h1>Applicants for {{ job.title }}</h1><p>{{ job.company }} · Required skills: {{ job.required_skills }}</p><p>Review each candidate's submitted resume, profile and cover letter. Skill-match scores are an aid to human review, not a hiring decision.</p></div>
+  {% if screened %}
+    <div class="applicant-list">
+      {% for item in screened %}
+        {% set candidate = item.application.candidate %}
+        {% set profile = item.profile %}
+        <article class="applicant-card dashboard-panel">
+          <div class="applicant-heading"><div><h2>{{ candidate.name }}</h2><p>{{ candidate.email }}{% if profile and profile.phone %} · {{ profile.phone }}{% endif %}{% if profile and profile.location %} · {{ profile.location }}{% endif %}</p><p>Applied {{ item.application.applied_at.strftime('%d %b %Y') if item.application.applied_at else '' }} · Current status: <span class="status-badge">{{ item.application.status }}</span></p></div><div class="match-score"><strong>{{ item.ranking_score }}%</strong><span>combined match</span><small>Skills {{ item.score }}% · Text {{ item.similarity }}%</small></div></div>
+          {% if profile %}
+            <div class="applicant-profile-grid">
+              {% if profile.headline %}<div class="profile-detail-wide"><strong>Professional headline</strong><p>{{ profile.headline }}</p></div>{% endif %}
+              {% if profile.skills %}<div class="profile-detail-wide"><strong>Skills</strong><p>{{ profile.skills }}</p></div>{% endif %}
+              {% if profile.education %}<div class="profile-detail-wide"><strong>Education</strong><p>{{ profile.education }}</p></div>{% endif %}
+              {% if profile.experience %}<div class="profile-detail-wide"><strong>Experience and projects</strong><p class="preserve-lines">{{ profile.experience }}</p></div>{% endif %}
+              {% if profile.linkedin_url %}<div class="profile-detail-wide"><strong>LinkedIn</strong><p><a href="{{ profile.linkedin_url }}" target="_blank" rel="noopener noreferrer">{{ profile.linkedin_url }}</a></p></div>{% endif %}
+              {% if profile.portfolio_url %}<div class="profile-detail-wide"><strong>Portfolio / GitHub</strong><p><a href="{{ profile.portfolio_url }}" target="_blank" rel="noopener noreferrer">{{ profile.portfolio_url }}</a></p></div>{% endif %}
+            </div>
+          {% else %}<p class="muted">This candidate has not completed their optional profile fields yet.</p>{% endif %}
+          <p><strong>Matched skills:</strong> {{ item.matched|join(', ') if item.matched else 'None detected' }}</p><p><strong>TF-IDF resume/job text similarity:</strong> {{ item.similarity }}%</p>
+          <p><strong>Missing listed skills:</strong> {{ item.missing|join(', ') if item.missing else 'None from listed requirements' }}</p>
+          {% if item.submitted_resume %}<p><strong>Resume submitted:</strong> {{ item.submitted_resume.original_filename }}</p>{% elif item.resume_available %}<p class="warning-note">This application predates resume selection. The candidate's current resume is shown as a fallback.</p>{% else %}<p class="warning-note">No resume file is currently available for this application.</p>{% endif %}
+          {% if not item.resume_readable %}<p class="warning-note">No readable resume text was found, so the skill-match score is 0.</p>{% endif %}
+          {% if item.resume_available %}<p><a class="btn-secondary-custom" href="{{ url_for('auth.download_applicant_resume', application_id=item.application.id) }}">Download submitted resume</a></p>{% endif %}
+          <h3>Cover letter</h3><p class="cover-letter">{{ item.application.cover_letter }}</p>
+          <div class="applicant-actions"><form method="post" action="{{ url_for('auth.update_application_status', application_id=item.application.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label for="status-{{ item.application.id }}">Update decision</label><select id="status-{{ item.application.id }}" name="status">{% for status in ['Submitted','Reviewing','Shortlisted','Interview','Hired','Rejected'] %}<option value="{{ status }}" {% if item.application.status == status %}selected{% endif %}>{{ status }}</option>{% endfor %}</select><button class="btn-primary-custom" type="submit">Save decision</button></form>
+            <form method="post" action="{{ url_for('auth.schedule_interview', application_id=item.application.id) }}" class="interview-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><h3>Schedule an interview</h3><label for="interview-date-{{ item.application.id }}">Date and time</label><input id="interview-date-{{ item.application.id }}" type="datetime-local" name="scheduled_at" required><label for="interview-details-{{ item.application.id }}">Meeting link or location and notes</label><textarea id="interview-details-{{ item.application.id }}" name="meeting_details" rows="2" maxlength="1000" placeholder="Video meeting URL or office address" required></textarea><button class="btn-secondary-custom" type="submit">Schedule interview</button></form></div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}<div class="empty-state"><h3>No applications yet</h3><p>When candidates apply, their profiles and submitted resumes will appear here.</p></div>{% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Candidate dashboard | HireSphere{% endblock %}
+{% block content %}
+<section class="dashboard-page">
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="profile-summary">
+        <div class="profile-avatar">{{ current_user.name[:1]|upper }}</div>
+        <h2>{{ current_user.name }}</h2>
+        <p>{{ current_user.email }}</p>
+        <span class="role-badge">Candidate</span>
+      </div>
+      <nav class="dashboard-menu">
+        <a class="active" href="{{ url_for('auth.dashboard') }}">▦ Overview</a>
+        <a href="{{ url_for('auth.edit_profile') }}">♙ My profile</a>
+        <a href="{{ url_for('public.job_list') }}">⌕ Browse jobs</a>
+        <a href="{{ url_for('auth.recommendations_page') }}">✦ AI recommendations</a>
+        <a href="{{ url_for('auth.my_applications') }}">▤ My applications</a>
+        <a href="{{ url_for('auth.saved_jobs') }}">☆ Saved jobs</a>
+        <a href="{{ url_for('auth.notifications_page') }}">♧ Notifications ({{ unread_notification_count }})</a>
+      </nav>
+    </aside>
+
+    <div class="dashboard-main">
+      <div class="dashboard-welcome">
+        <div><span class="eyebrow">CANDIDATE WORKSPACE</span><h1>Welcome back, {{ current_user.name.split()[0] }}.</h1><p>Manage your details, keep multiple resumes, apply for jobs and follow each application.</p></div>
+        <a class="btn-primary-custom" href="{{ url_for('public.job_list') }}">Explore jobs →</a>
+      </div>
+
+      <div class="dashboard-stats">
+        <article class="stat-card"><span class="stat-icon">▤</span><p>Total applications</p><strong>{{ my_applications|length }}</strong></article>
+        <article class="stat-card"><span class="stat-icon">◷</span><p>Under review</p><strong>{{ my_applications|selectattr('status','equalto','Reviewing')|list|length }}</strong></article>
+        <article class="stat-card"><span class="stat-icon">✓</span><p>Shortlisted</p><strong>{{ my_applications|selectattr('status','equalto','Shortlisted')|list|length }}</strong></article>
+        <article class="stat-card"><span class="stat-icon">★</span><p>Hired</p><strong>{{ my_applications|selectattr('status','equalto','Hired')|list|length }}</strong></article>
+      </div>
+
+      <section class="dashboard-panel">
+        <div class="panel-heading"><div><h2>My candidate profile</h2><p>Employers can review these details when you apply for one of their jobs.</p></div><a href="{{ url_for('auth.edit_profile') }}">Edit profile →</a></div>
+        <div class="profile-details-grid">
+          <div><span>Full name</span><strong>{{ current_user.name }}</strong></div>
+          <div><span>Email</span><strong>{{ current_user.email }}</strong></div>
+          <div><span>Phone</span><strong>{{ profile.phone or 'Not added' }}</strong></div>
+          <div><span>Location</span><strong>{{ profile.location or 'Not added' }}</strong></div>
+          <div class="profile-detail-wide"><span>Professional headline</span><strong>{{ profile.headline or 'Add a short professional headline' }}</strong></div>
+          <div class="profile-detail-wide"><span>Skills</span><p>{{ profile.skills or 'Add your technical and professional skills' }}</p></div>
+          <div class="profile-detail-wide"><span>Education</span><p>{{ profile.education or 'Add your education details' }}</p></div>
+          <div class="profile-detail-wide"><span>Experience</span><p>{{ profile.experience or 'Add your work experience or projects' }}</p></div>
+          {% if profile.linkedin_url %}<div class="profile-detail-wide"><span>LinkedIn</span><a href="{{ profile.linkedin_url }}" target="_blank" rel="noopener noreferrer">{{ profile.linkedin_url }}</a></div>{% endif %}
+          {% if profile.portfolio_url %}<div class="profile-detail-wide"><span>Portfolio</span><a href="{{ profile.portfolio_url }}" target="_blank" rel="noopener noreferrer">{{ profile.portfolio_url }}</a></div>{% endif %}
+        </div>
+      </section>
+
+      <section class="dashboard-panel">
+        <div class="panel-heading"><div><h2>My resumes</h2><p>Upload more than one PDF or DOCX. Choose a primary resume for AI recommendations, and select the appropriate resume when applying.</p></div></div>
+        {% if resumes %}
+          <div class="resume-list">
+            {% for resume in resumes %}
+              <article class="resume-row">
+                <div class="resume-file-icon">PDF<br><small>/ DOCX</small></div>
+                <div class="resume-row-info"><strong>{{ resume.original_filename }}</strong><p>Uploaded {{ resume.uploaded_at.strftime('%d %b %Y') if resume.uploaded_at else 'recently' }}</p>{% if resume.is_primary %}<span class="status-badge">Primary resume</span>{% endif %}{% if resume.application_links %}<span class="muted small-text"> · Used in {{ resume.application_links|length }} application(s)</span>{% endif %}</div>
+                <div class="resume-row-actions">
+                  <a class="btn-secondary-custom" href="{{ url_for('auth.download_own_resume', resume_id=resume.id) }}">Download</a>
+                  {% if not resume.is_primary %}<form method="post" action="{{ url_for('auth.set_primary_resume', resume_id=resume.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn-secondary-custom" type="submit">Make primary</button></form>{% endif %}
+                  {% if not resume.application_links %}<form method="post" action="{{ url_for('auth.delete_resume', resume_id=resume.id) }}" onsubmit="return confirm('Delete this resume?');"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn-danger-custom" type="submit">Delete</button></form>{% endif %}
+                </div>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state"><h3>No resumes uploaded yet</h3><p>Upload a text-based resume to apply for jobs and get skill-match recommendations.</p></div>
+        {% endif %}
+        <form class="resume-upload-form" method="post" action="{{ url_for('auth.upload_resume') }}" enctype="multipart/form-data">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label for="resume">Add another resume (PDF or DOCX, max 5 MB)</label>
+          <input id="resume" type="file" name="resume" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required>
+          <button class="btn-primary-custom" type="submit">Upload resume</button>
+        </form>
+      </section>
+
+      <section class="dashboard-panel">
+        <div class="panel-heading"><div><h2>Recommended jobs</h2><p>Ranked using skill overlap (70%) and TF-IDF text similarity (30%). Scores are guidance, not hiring decisions.</p></div><a href="{{ url_for('auth.recommendations_page') }}">View all →</a></div>
+        {% if recommendations %}
+          <div class="recommendation-list">{% for item in recommendations %}<article class="recommendation-item"><div><h3><a href="{{ url_for('public.job_detail', job_id=item.job.id) }}">{{ item.job.title }}</a></h3><p>{{ item.job.company }} · {{ item.job.location }}</p><p class="muted">Matched skills: {{ item.matched|join(', ') if item.matched else 'No listed skills matched yet' }}</p><a href="{{ url_for('public.job_detail', job_id=item.job.id) }}">View job and apply →</a></div><div class="match-score"><strong>{{ item.ranking_score if item.ranking_score is defined else item.score }}%</strong><span>combined match</span><small>Skills {{ item.score }}% · Text {{ item.similarity|default(0) }}%</small></div></article>{% endfor %}</div>
+        {% elif not resume_readable %}<div class="empty-state"><h3>Upload a resume to get recommendations</h3><p>Once uploaded, HireSphere compares resume text with skills in open jobs.</p></div>
+        {% else %}<div class="empty-state"><h3>No recommendations yet</h3><p>Check back when employers post open jobs.</p></div>{% endif %}
+      </section>
+
+      <section class="dashboard-panel">
+        <div class="panel-heading"><div><h2>Recent applications</h2><p>Check progress and employer decisions.</p></div><a href="{{ url_for('auth.my_applications') }}">View all →</a></div>
+        {% if my_applications %}<div class="table-responsive"><table class="dashboard-table"><thead><tr><th>Job</th><th>Company</th><th>Applied</th><th>Status</th></tr></thead><tbody>{% for application in my_applications[:5] %}<tr><td>{{ application.job.title }}</td><td>{{ application.job.company }}</td><td>{{ application.applied_at.strftime('%d %b %Y') if application.applied_at else '—' }}</td><td><span class="status-badge">{{ application.status }}</span></td></tr>{% endfor %}</tbody></table></div>
+        {% else %}<div class="empty-state"><h3>Your career journey starts here</h3><p>You have not applied for any jobs yet.</p><a class="btn-primary-custom" href="{{ url_for('public.job_list') }}">Browse jobs →</a></div>{% endif %}
+      </section>
+    </div>
+  </div>
+</section>
+{% endblock %}

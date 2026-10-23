@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Edit candidate profile | HireSphere{% endblock %}
+{% block content %}
+<section class="content-section profile-edit-page">
+  <a class="auth-back" href="{{ url_for('auth.dashboard') }}">← Back to dashboard</a>
+  <div class="section-heading"><span class="eyebrow">CANDIDATE WORKSPACE</span><h1>My candidate profile</h1><p>Keep your details updated. Employers who receive your application can view this profile and the resume you submit for that job.</p></div>
+  <form class="profile-form dashboard-panel" method="post" action="{{ url_for('auth.edit_profile') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="profile-form-grid">
+      <div class="form-field"><label for="name">Full name</label><input id="name" value="{{ current_user.name }}" disabled><small>To change your account name, contact the site administrator.</small></div>
+      <div class="form-field"><label for="email">Email address</label><input id="email" value="{{ current_user.email }}" disabled></div>
+      <div class="form-field"><label for="phone">Phone number</label><input id="phone" name="phone" maxlength="40" value="{{ profile.phone or '' }}" placeholder="e.g. +91 98765 43210"></div>
+      <div class="form-field"><label for="location">Current location</label><input id="location" name="location" maxlength="150" value="{{ profile.location or '' }}" placeholder="City, state"></div>
+      <div class="form-field profile-form-wide"><label for="headline">Professional headline</label><input id="headline" name="headline" maxlength="180" value="{{ profile.headline or '' }}" placeholder="e.g. Computer Science student | Python and Machine Learning"></div>
+      <div class="form-field profile-form-wide"><label for="skills">Skills</label><textarea id="skills" name="skills" rows="3" placeholder="Python, Flask, SQL, Machine Learning">{{ profile.skills or '' }}</textarea></div>
+      <div class="form-field profile-form-wide"><label for="education">Education</label><textarea id="education" name="education" rows="4" placeholder="Degree, college, graduation year, relevant coursework">{{ profile.education or '' }}</textarea></div>
+      <div class="form-field profile-form-wide"><label for="experience">Work experience, internships and projects</label><textarea id="experience" name="experience" rows="5" placeholder="Role or project, organization, dates, responsibilities and achievements">{{ profile.experience or '' }}</textarea></div>
+      <div class="form-field"><label for="linkedin_url">LinkedIn profile URL</label><input id="linkedin_url" name="linkedin_url" type="url" maxlength="255" value="{{ profile.linkedin_url or '' }}" placeholder="https://www.linkedin.com/in/..."></div>
+      <div class="form-field"><label for="portfolio_url">Portfolio / GitHub URL</label><input id="portfolio_url" name="portfolio_url" type="url" maxlength="255" value="{{ profile.portfolio_url or '' }}" placeholder="https://..."></div>
+    </div>
+    <button class="btn-primary-custom" type="submit">Save profile</button>
+  </form>
+</section>
+{% endblock %}

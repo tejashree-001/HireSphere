@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block title %}Create account | HireSphere{% endblock %}
+{% block content %}<section class="auth-page"><div class="auth-card"><a class="auth-back" href="{{ url_for('public.home') }}">← Back to home</a><div class="auth-logo">H</div><span class="eyebrow">JOIN HIRESHPERE</span><h1>Create your account</h1><p class="auth-subtitle">Choose the workspace that fits your goal.</p>
+<form method="post" action="{{ url_for('auth.register') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<label class="form-label" for="role">I am joining as</label><select id="role" name="role" required><option value="candidate" {% if selected_role == 'candidate' %}selected{% endif %}>Candidate — find jobs</option><option value="employer" {% if selected_role == 'employer' %}selected{% endif %}>Employer — hire talent</option></select>
+<div class="form-field"><label for="name">Full name</label><input id="name" name="name" maxlength="100" autocomplete="name" value="{{ request.form.get('name','') }}" required></div>
+<div class="form-field"><label for="email">Email address</label><input id="email" type="email" name="email" maxlength="255" autocomplete="email" value="{{ request.form.get('email','') }}" required></div>
+<div class="form-field"><label for="password">Password</label><input id="password" type="password" name="password" minlength="8" autocomplete="new-password" required><small>Use at least 8 characters.</small></div>
+<button class="auth-submit" type="submit">Create account →</button></form><p class="auth-switch">Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a></p></div></section>{% endblock %}

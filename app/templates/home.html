@@ -1,0 +1,62 @@
+
+{% extends "base.html" %}
+
+{% block title %}HireSphere | Smart Recruitment{% endblock %}
+
+{% block content %}
+<section class="landing">
+    <div class="landing-content">
+        <span class="eyebrow">✦ SMART RECRUITMENT & CAREER PORTAL</span>
+
+        <h1>
+            Find the right job.<br>
+            <span>Build your future.</span>
+        </h1>
+
+        <p>
+            Your resume, your skills, your next opportunity.
+            Bring your career journey and recruitment process together
+            in one place.
+        </p>
+
+        <div class="landing-actions">
+            <a class="btn-primary-custom"
+               href="{{ url_for('auth.register') }}">
+                Get Started Free <span>→</span>
+            </a>
+
+            <a class="btn-secondary-custom"
+               href="{{ url_for('public.browse_jobs') }}">
+                Explore Jobs
+            </a>
+        </div>
+
+        <div class="role-cards">
+            <a class="role-card candidate-role"
+               href="{{ url_for('auth.register', role='candidate') }}">
+                <div class="role-icon">↗</div>
+                <div class="role-text">
+                    <h2>I'm a Candidate</h2>
+                    <p>Discover opportunities and manage your career.</p>
+                </div>
+                <span class="role-arrow">→</span>
+            </a>
+
+            <a class="role-card employer-role"
+               href="{{ url_for('auth.register', role='employer') }}">
+                <div class="role-icon">＋</div>
+                <div class="role-text">
+                    <h2>I'm an Employer</h2>
+                    <p>Post jobs and find the right talent.</p>
+                </div>
+                <span class="role-arrow">→</span>
+            </a>
+        </div>
+
+        <div class="landing-login">
+            Already have an account?
+            <a href="{{ url_for('auth.login') }}">Log in</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

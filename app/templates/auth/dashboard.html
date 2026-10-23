@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | HireSphere{% endblock %}
+
+{% block content %}
+<section class="dashboard-page">
+    <div class="dashboard-layout">
+
+        <aside class="dashboard-sidebar">
+            <div class="profile-summary">
+                <div class="profile-avatar">
+                    {{ current_user.name[:1]|upper }}
+                </div>
+
+                <h2>{{ current_user.name }}</h2>
+                <p>{{ current_user.email }}</p>
+
+                <span class="role-badge">
+                    {{ current_user.role|title }}
+                </span>
+            </div>
+
+            <nav class="dashboard-menu">
+                <a class="active" href="{{ url_for('auth.dashboard') }}">
+                    Dashboard
+                </a>
+
+                <a href="{{ url_for('public.job_list') }}">
+                    Browse Jobs
+                </a>
+
+                {% if current_user.role == 'candidate' %}
+                    <a href="{{ url_for('auth.recommendations_page') }}">
+                        AI Recommendations
+                    </a>
+
+                    <a href="{{ url_for('auth.my_applications') }}">
+                        My Applications
+                    </a>
+                {% endif %}
+
+                {% if current_user.role == 'employer' %}
+                    <a href="{{ url_for('auth.create_job') }}">
+                        Post a Job
+                    </a>
+                {% endif %}
+            </nav>
+        </aside>
+
+        <div class="dashboard-main">
+            <div class="dashboard-welcome">
+                <div>
+                    <span class="eyebrow">YOUR WORKSPACE</span>
+
+                    <h1>
+                        Welcome, {{ current_user.name }}!
+                    </h1>
+
+                    {% if current_user.role == 'candidate' %}
+                        <p>
+                            Explore job opportunities and find jobs
+                            matching your skills.
+                        </p>
+                    {% elif current_user.role == 'employer' %}
+                        <p>
+                            Post job openings and manage your applicants.
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if current_user.role == 'candidate' %}
+                <section class="dashboard-panel">
+                    <h2>Candidate Dashboard</h2>
+
+                    <p>
+                        Find suitable jobs and track your applications.
+                    </p>
+
+                    <p>
+                        <a href="{{ url_for('public.job_list') }}">
+                            Browse available jobs
+                        </a>
+                    </p>
+
+                    <p>
+                        <a href="{{ url_for('auth.recommendations_page') }}">
+                            View AI job recommendations
+                        </a>
+                    </p>
+
+                    <p>
+                        <a href="{{ url_for('auth.my_applications') }}">
+                            View my applications
+                        </a>
+                    </p>
+                </section>
+            {% elif current_user.role == 'employer' %}
+                <section class="dashboard-panel">
+                    <h2>Employer Dashboard</h2>
+
+                    <p>
+                        Create job postings and review candidate applications.
+                    </p>
+
+                    <p>
+                        <a href="{{ url_for('auth.create_job') }}">
+                            Create a new job posting
+                        </a>
+                    </p>
+
+                    <p>
+                        <a href="{{ url_for('public.job_list') }}">
+                            Browse published jobs
+                        </a>
+                    </p>
+                </section>
+            {% endif %}
+
+            <section class="dashboard-panel">
+                <h2>Account Information</h2>
+
+                <p>
+                    <strong>Name:</strong>
+                    {{ current_user.name }}
+                </p>
+
+                <p>
+                    <strong>Email:</strong>
+                    {{ current_user.email }}
+                </p>
+
+                <p>
+                    <strong>Role:</strong>
+                    {{ current_user.role|title }}
+                </p>
+            </section>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

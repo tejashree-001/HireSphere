@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Saved jobs | HireSphere{% endblock %}
+{% block content %}
+<section class="content-section">
+  <div class="section-heading"><span class="eyebrow">CANDIDATE WORKSPACE</span><h1>Saved jobs</h1><p>Keep interesting opportunities here and return when you are ready to apply.</p></div>
+  {% if saved_jobs %}<div class="recommendation-list">
+    {% for saved in saved_jobs %}{% if saved.job and saved.job.is_active %}<article class="recommendation-item"><div><h3><a href="{{ url_for('public.job_detail', job_id=saved.job.id) }}">{{ saved.job.title }}</a></h3><p>{{ saved.job.company }} · {{ saved.job.location }}</p><p class="muted">Saved {{ saved.saved_at.strftime('%d %b %Y') if saved.saved_at else '' }}</p><a href="{{ url_for('public.job_detail', job_id=saved.job.id) }}">View job and apply →</a></div><form method="post" action="{{ url_for('auth.toggle_saved_job', job_id=saved.job.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn-danger-custom" type="submit">Remove</button></form></article>{% endif %}{% endfor %}
+  </div>{% else %}<div class="empty-state"><h3>No saved jobs yet</h3><p>Open a job listing and select “Save job for later”.</p><a class="btn-primary-custom" href="{{ url_for('public.job_list') }}">Browse jobs →</a></div>{% endif %}
+</section>
+{% endblock %}
